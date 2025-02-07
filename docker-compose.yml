@@ -1,0 +1,40 @@
+version: "3.8"
+
+services:
+  database:
+    image: postgres:latest
+    container_name: super-postgreSQL
+    restart: always
+    environment:
+      POSTGRES_USER: super
+      POSTGRES_PASSWORD: secretpass
+      POSTGRES_DB: super-task-db
+    ports:
+      - "5555:5555"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+  backend:
+    build: 
+      context: ./backend
+      dockerfile: Dockerfile 
+    container_name: backend
+    depends_on:
+      - database
+    environment:
+      DATABASE_URL: "postgresql://super:secretpass@database:5555/super-task-db?schema=public"
+    ports:
+      - "4000:3000"
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: frontend
+    depends_on:
+      - backend
+    ports:
+      - "3000:3000"
+
+volumes:
+  pgdata:
